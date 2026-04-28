@@ -3,6 +3,14 @@ import { authApi } from '../lib/api.js'
 
 const AuthContext = createContext(null)
 const TOKEN_KEY = 'gp_token'
+const DEV_USER_KEY = 'gp_dev_user'
+
+const devUsers = {
+  kaoyan: { id: 'dev-1', name: '考研测试用户', target: 'kaoyan', email: 'kaoyan@test.local', role: 'user', status: 'normal' },
+  kaogong: { id: 'dev-2', name: '考公测试用户', target: 'kaogong', email: 'kaogong@test.local', role: 'user', status: 'normal' },
+  job: { id: 'dev-3', name: '就业测试用户', target: 'job', email: 'job@test.local', role: 'user', status: 'normal' },
+  liuxue: { id: 'dev-4', name: '留学测试用户', target: 'liuxue', email: 'liuxue@test.local', role: 'user', status: 'normal' },
+}
 
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(localStorage.getItem(TOKEN_KEY) || '')
@@ -12,6 +20,18 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let active = true
     async function init() {
+      // 开发模式：通过 localStorage 设置模拟用户，无需后端
+      const devTarget = localStorage.getItem(DEV_USER_KEY)
+      if (devTarget && devUsers[devTarget]) {
+        const devUser = devUsers[devTarget]
+        if (active) {
+          setToken('dev-token')
+          setUser(devUser)
+          setLoading(false)
+        }
+        return
+      }
+
       if (!token) {
         setLoading(false)
         return
@@ -39,6 +59,21 @@ export function AuthProvider({ children }) {
     }
   }, [token])
 
+  function switchDevUser(target) {
+    if (!target) {
+      localStorage.removeItem(DEV_USER_KEY)
+      setToken('')
+      setUser(null)
+      return
+    }
+    const devUser = devUsers[target]
+    if (devUser) {
+      localStorage.setItem(DEV_USER_KEY, target)
+      setToken('dev-token')
+      setUser(devUser)
+    }
+  }
+
   async function login(payload) {
     const auth = await authApi.login(payload)
     localStorage.setItem(TOKEN_KEY, auth.token)
@@ -57,13 +92,14 @@ export function AuthProvider({ children }) {
 
   async function logout() {
     try {
-      if (token) {
+      if (token && token !== 'dev-token') {
         await authApi.logout(token)
       }
     } catch {
       // ignore network/logout failures for local session cleanup
     }
     localStorage.removeItem(TOKEN_KEY)
+    localStorage.removeItem(DEV_USER_KEY)
     setToken('')
     setUser(null)
   }
@@ -78,6 +114,7 @@ export function AuthProvider({ children }) {
         login,
         register,
         logout,
+        switchDevUser,
       }}
     >
       {children}
