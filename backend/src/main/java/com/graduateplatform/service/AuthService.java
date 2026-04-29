@@ -41,7 +41,7 @@ public class AuthService {
             throw new BusinessException("该学号已被注册");
         }
 
-        if (!req.getPassword().matches("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,20}$")) {
+        if (!req.getPassword().matches("^(?=.*[A-Za-z])(?=.*\\d).{8,20}$")) {
             throw new BusinessException("密码需为8-20位，包含字母和数字");
         }
 

@@ -13,6 +13,17 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
     open-in-view: false
+  mail:
+    host: smtp.qq.com
+    port: 587
+    username: 1345169715@qq.com
+    password: kyhwvasgnqligjdi
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 server:
   port: 8080

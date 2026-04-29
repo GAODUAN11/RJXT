@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar.jsx'
 import Footer from '../components/Footer.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
+import { authApi } from '../lib/api.js'
 import '../App.css'
 
 const accountTypeOptions = [
@@ -59,6 +60,32 @@ function RegisterPage() {
   })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [countdown, setCountdown] = useState(0)
+  const timerRef = useRef(null)
+
+  async function handleSendCode() {
+    const accountError = validateAccount(form.accountType, form.account)
+    if (accountError) {
+      setError(accountError)
+      return
+    }
+    setError('')
+    try {
+      await authApi.sendCode(form.account.trim(), form.accountType)
+      let sec = 60
+      setCountdown(sec)
+      timerRef.current = setInterval(() => {
+        sec -= 1
+        setCountdown(sec)
+        if (sec <= 0) {
+          clearInterval(timerRef.current)
+          timerRef.current = null
+        }
+      }, 1000)
+    } catch (e) {
+      setError(e.message || '发送验证码失败')
+    }
+  }
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -166,12 +193,24 @@ function RegisterPage() {
               </label>
               <label className="field">
                 <span>验证码</span>
-                <input
-                  value={form.verifyCode}
-                  onChange={(event) => setForm({ ...form, verifyCode: event.target.value })}
-                  type="text"
-                  placeholder="请输入验证码"
-                />
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input
+                    value={form.verifyCode}
+                    onChange={(event) => setForm({ ...form, verifyCode: event.target.value })}
+                    type="text"
+                    placeholder="请输入验证码"
+                    style={{ flex: 1 }}
+                  />
+                  <button
+                    className="btn outline small"
+                    type="button"
+                    onClick={handleSendCode}
+                    disabled={countdown > 0}
+                    style={{ whiteSpace: 'nowrap', minWidth: 100 }}
+                  >
+                    {countdown > 0 ? `${countdown}s 后重发` : '发送验证码'}
+                  </button>
+                </div>
               </label>
               <label className="field">
                 <span>联系邮箱（可选）</span>

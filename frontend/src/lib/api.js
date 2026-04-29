@@ -20,6 +20,9 @@ async function request(path, options = {}) {
 }
 
 export const authApi = {
+  sendCode(target, type) {
+    return request('/api/auth/send-code', { method: 'POST', body: { target, type } })
+  },
   register(payload) {
     return request('/api/auth/register', { method: 'POST', body: payload })
   },
