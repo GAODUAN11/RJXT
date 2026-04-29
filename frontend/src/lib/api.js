@@ -95,3 +95,32 @@ export const userApi = {
     return request('/api/users/me/dashboard', { token })
   },
 }
+
+export const adminApi = {
+  dashboard(token) {
+    return request('/api/admin/dashboard', { token })
+  },
+  pendingPosts(page, size, token) {
+    return request(`/api/admin/posts/pending?page=${page}&size=${size}`, { token })
+  },
+  reviewList(status, page, size, token) {
+    const q = status ? `?status=${status}&page=${page}&size=${size}` : `?page=${page}&size=${size}`
+    return request(`/api/admin/posts${q}`, { token })
+  },
+  reviewPost(id, action, reason, token) {
+    return request(`/api/admin/posts/${id}/review`, {
+      method: 'PUT', body: { action, reason }, token,
+    })
+  },
+  users(target, status, page, size, token) {
+    const params = new URLSearchParams({ page: String(page), size: String(size) })
+    if (target) params.set('target', target)
+    if (status) params.set('status', status)
+    return request(`/api/admin/users?${params}`, { token })
+  },
+  updateUserStatus(id, status, reason, token) {
+    return request(`/api/admin/users/${id}/status`, {
+      method: 'PUT', body: { status, reason }, token,
+    })
+  },
+}

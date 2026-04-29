@@ -111,6 +111,7 @@ export default function Navbar() {
         <NavLink to="/community">社区</NavLink>
         <NavLink to="/practice">题库</NavLink>
         {isAuthed && menu && <TrackDropdown menu={menu} />}
+        {isAuthed && user?.role === 'admin' && <NavLink to="/admin">管理后台</NavLink>}
       </nav>
 
       <div className="nav-actions">
